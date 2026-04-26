@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Class Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@700&family=Patrick+Hand&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff85a2;
+            --accent: #9f7aea;
+            --bg-page: #fff5f7;
+            --font-main: 'Patrick Hand', cursive;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-page);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- TABS --- */
+        .nav-container {
+            background: white;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 15px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+
+        .tab-btn {
+            padding: 12px 25px;
+            border-radius: 30px;
+            border: 2px solid var(--accent);
+            cursor: pointer;
+            background: white;
+            font-family: var(--font-main);
+            font-weight: bold;
+            color: var(--accent);
+            margin: 0 10px;
+            transition: 0.3s;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* --- CONTENT --- */
+        .widget-view {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 10px;
+            box-sizing: border-box;
+        }
+
+        .widget-view.active { display: flex; }
+
+        /* --- GREETINGS WIDGET (The Frame) --- */
+        .frame-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px; /* Adjust based on your image width */
+            margin: 0 auto;
+        }
+
+        .frame-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            /* If image is missing, show a placeholder border */
+            min-height: 200px;
+            border: 2px dashed #ccc; 
+        }
+
+        .text-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%; /* Keeps text inside the inner beige area of your image */
+            text-align: center;
+        }
+
+        .banner-text {
+            font-family: 'Gaegu', cursive;
+            font-size: clamp(1.5rem, 8vw, 4.5rem); /* Responsive text size */
+            color: #d53f8c;
+            margin: 0;
+            line-height: 1.1;
+        }
+
+        /* --- PICKER WIDGET --- */
+        .picker-card {
+            background: white;
+            padding: 40px;
+            border-radius: 40px;
+            border: 8px solid #fbb6ce;
+            text-align: center;
+            width: 100%;
+            max-width: 350px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+
+        #display {
+            font-size: 7rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin: 20px 0;
+            background: #fdf2f5;
+            border-radius: 30px;
+            min-height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-roll { background-color: var(--primary); color: white; border: none; padding: 15px; border-radius: 20px; width: 100%; font-size: 1.2rem; cursor: pointer; font-family: var(--font-main); box-shadow: 0 4px 0 #d53f8c; }
+        .btn-roll:active { transform: translateY(2px); box-shadow: 0 2px 0 #d53f8c; }
+        
+        .feedback-container { display: none; gap: 10px; justify-content: center; margin-top: 10px; }
+        .btn-yes { background-color: #48bb78; color: white; border: none; padding: 12px 20px; border-radius: 20px; cursor: pointer; font-family: var(--font-main); }
+        .btn-no { background-color: #f56565; color: white; border: none; padding: 12px 20px; border-radius: 20px; cursor: pointer; font-family: var(--font-main); }
+    </style>
+</head>
+<body>
+
+    <div class="nav-container">
+        <button id="btn-greet" class="tab-btn active" onclick="openWidget('greetings-tab', this)">Greetings</button>
+        <button id="btn-pick" class="tab-btn" onclick="openWidget('picker-tab', this)">Student Picker</button>
+    </div>
+
+    <div id="greetings-tab" class="widget-view active">
+        <div class="frame-container">
+            <img src="greetings-frame.png" alt="Class Frame" class="frame-img">
+            <div class="text-overlay">
+                <h1 class="banner-text">Welcome to our English Class!</h1>
+            </div>
+        </div>
+    </div>
+
+    <div id="picker-tab" class="widget-view">
+        <div class="picker-card">
+            <h2 style="color: #d53f8c; margin-top: 0;">✨ Who is next? ✨</h2>
+            <div id="display">?</div>
+            <div class="controls">
+                <button id="rollBtn" class="btn-roll" onclick="roll()">Pick a Student!</button>
+                <div id="feedbackBtns" class="feedback-container">
+                    <button class="btn-yes" onclick="markDone(true)">Correct! ✅</button>
+                    <button class="btn-no" onclick="markDone(false)">Try Again ❌</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openWidget(tabId, btn) {
+            // Hide all
+            document.querySelectorAll('.widget-view').forEach(view => view.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+            
+            // Show selected
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        let students = Array.from({length: 28}, (_, i) => i + 1);
+        let currentPick = null;
+
+        function roll() {
+            if (students.length === 0) return alert("Everyone has been picked!");
+            
+            const rollBtn = document.getElementById('rollBtn');
+            const display = document.getElementById('display');
+            const feedbackBtns = document.getElementById('feedbackBtns');
+
+            rollBtn.disabled = true;
+            let count = 0;
+            
+            const timer = setInterval(() => {
+                display.innerText = students[Math.floor(Math.random() * students.length)];
+                count++;
+                if (count > 15) {
+                    clearInterval(timer);
+                    currentPick = parseInt(display.innerText);
+                    rollBtn.style.display = 'none';
+                    feedbackBtns.style.display = 'flex';
+                }
+            }, 60);
+        }
+
+        function markDone
